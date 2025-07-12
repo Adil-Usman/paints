@@ -57,8 +57,16 @@
         height: 30px;
       }
       .new {
-        height: 70px;
+        height: 120px;
         margin-left: 200px;
+        padding: 5px;
+        padding-bottom: 20px;
+        border-radius: 10px;
+      }
+      .adil {
+        position: absolute;
+        top: 80px;
+        right: 110px;
       }
       /* colour swatches (add more if you like) */
       .shade {
@@ -140,10 +148,10 @@
       <label
         class="fw-bold new text-danger fs-1 d-flex justify-content-center align-content-center"
         for="colorPicker"
-        style="border: 5px solid white"
-        >COLOR Map:</label
+        style="border: 5px solid rgb(255, 0, 0)"
+        >COLOR MAP</label
       >
-      <input type="color" id="colorPicker" value="#ff0000" />
+      <input class="adil" type="color" id="colorPicker" value="#ff0000" />
     </section>
 
     <script>
