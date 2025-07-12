@@ -3,9 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Drawing App (RGB from Colour‑Picker)</title>
+    <title>Drawing App – draw only on white canvas</title>
 
-    <!-- Bootstrap (optional – just kept from your file) -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -16,11 +15,8 @@
         margin: 0;
         padding: 0;
       }
-      div.drawing-dot {
-        /* dots you draw */
-        position: absolute;
-        border-radius: 50%;
-      }
+
+      /* toolbar (orange) */
       .container-fluid {
         width: 100%;
         height: 200px;
@@ -29,6 +25,7 @@
         justify-content: space-between;
         padding: 10px;
         flex-wrap: wrap;
+        z-index: 10;
       }
       h1 {
         color: #fff;
@@ -56,19 +53,8 @@
         width: 30px;
         height: 30px;
       }
-      .new {
-        height: 120px;
-        margin-left: 200px;
-        padding: 5px;
-        padding-bottom: 20px;
-        border-radius: 10px;
-      }
-      .adil {
-        position: absolute;
-        top: 80px;
-        right: 110px;
-      }
-      /* colour swatches (add more if you like) */
+
+      /* colour swatches */
       .shade {
         width: 30px;
         height: 30px;
@@ -113,10 +99,39 @@
       .tw {
         background: rgb(175, 175, 175);
       }
+
+      /* white drawing area */
+      #canvas {
+        position: relative; /* so dots are positioned inside it */
+        width: 100%;
+        height: calc(100vh - 200px); /* full height minus toolbar */
+        background: #fff;
+        overflow: hidden; /* hide overflow just in case */
+        cursor: crosshair;
+      }
+
+      /* dots you draw */
+      .drawing-dot {
+        position: absolute;
+        border-radius: 50%;
+      }
+
+      /* cosmetic tweaks */
+      .new {
+        height: 120px;
+        margin-left: 200px;
+        padding: 5px 5px 20px;
+        border-radius: 10px;
+      }
+      .adil {
+        position: absolute;
+        top: 80px;
+        right: 110px;
+      }
     </style>
   </head>
   <body>
-    <!-- toolbar -->
+    <!-- TOOLBAR -->
     <section class="container-fluid">
       <!-- size selectors -->
       <span style="display: flex; align-items: center; gap: 10px">
@@ -144,38 +159,44 @@
         <p class="shade eleven"></p>
         <p class="shade tw"></p>
       </span>
+
       <!-- native colour‑picker -->
       <label
         class="fw-bold new text-danger fs-1 d-flex justify-content-center align-content-center"
         for="colorPicker"
-        style="border: 5px solid rgb(255, 0, 0)"
-        >COLOR MAP</label
+        style="border: 5px solid #f00"
+        >COLOR MAP</label
       >
       <input class="adil" type="color" id="colorPicker" value="#ff0000" />
     </section>
 
+    <!-- WHITE CANVAS -->
+    <div id="canvas"></div>
+
     <script>
       /* ---------- Global state ---------- */
-      let rg = ""; // holds RGB string of colour‑picker
-      let currentColor = rg; // active drawing colour (starts as picker colour)
+      let rg = ""; // RGB string from colour‑picker
+      let currentColor = rg; // active drawing colour
       let currentSize = 20; // default dot size
       let drawing = false; // mouse state
 
-      /* ---------- Convert colour‑picker HEX -> RGB ---------- */
+      /* ---------- Colour‑picker HEX → RGB ---------- */
       const colorInput = document.getElementById("colorPicker");
+      const canvas = document.getElementById("canvas");
+
       function hexToRGB(hex) {
         const r = parseInt(hex.substr(1, 2), 16);
         const g = parseInt(hex.substr(3, 2), 16);
         const b = parseInt(hex.substr(5, 2), 16);
         return `rgb(${r}, ${g}, ${b})`;
       }
-      // initialise with picker’s default value
-      rg = hexToRGB(colorInput.value);
+
+      rg = hexToRGB(colorInput.value); // initial colour
       currentColor = rg;
 
       colorInput.addEventListener("input", function () {
-        rg = hexToRGB(this.value); // update RGB variable
-        currentColor = rg; // immediately use for drawing
+        rg = hexToRGB(this.value);
+        currentColor = rg;
       });
 
       /* ---------- Size buttons ---------- */
@@ -196,19 +217,25 @@
         });
       });
 
-      /* ---------- Drawing logic ---------- */
-      window.addEventListener("mousedown", () => (drawing = true));
-      window.addEventListener("mouseup", () => (drawing = false));
+      /* ---------- Drawing on canvas only ---------- */
+      canvas.addEventListener("mousedown", () => (drawing = true));
+      canvas.addEventListener("mouseup", () => (drawing = false));
+      canvas.addEventListener("mouseleave", () => (drawing = false)); // stop if cursor leaves canvas
 
-      window.addEventListener("mousemove", (e) => {
+      canvas.addEventListener("mousemove", (e) => {
         if (!drawing) return;
+
+        const rect = canvas.getBoundingClientRect(); // canvas position
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
         const dot = document.createElement("div");
         dot.className = "drawing-dot";
         dot.style.width = dot.style.height = currentSize + "px";
-        dot.style.left = e.clientX + "px";
-        dot.style.top = e.clientY + "px";
+        dot.style.left = x + "px";
+        dot.style.top = y + "px";
         dot.style.backgroundColor = currentColor;
-        document.body.appendChild(dot);
+        canvas.appendChild(dot);
       });
     </script>
   </body>
